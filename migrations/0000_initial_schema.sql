@@ -1,3 +1,6 @@
+-- Baseline of the schema that was already deployed before D1 migrations were
+-- introduced. Every statement is idempotent so applying it to the existing
+-- database records the baseline without replacing tables or touching data.
 CREATE TABLE IF NOT EXISTS projects (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   slug TEXT NOT NULL UNIQUE,
@@ -5,12 +8,8 @@ CREATE TABLE IF NOT EXISTS projects (
   summary TEXT NOT NULL,
   description TEXT,
   image_url TEXT,
-  banner_url TEXT,
   website_url TEXT,
   repo_url TEXT,
-  download_url TEXT,
-  long_description TEXT,
-  technologies TEXT,
   status TEXT NOT NULL DEFAULT 'development',
   featured INTEGER NOT NULL DEFAULT 0,
   sort_order INTEGER NOT NULL DEFAULT 0,
@@ -36,20 +35,6 @@ CREATE TABLE IF NOT EXISTS news (
   FOREIGN KEY (project_id) REFERENCES projects(id)
 );
 
-CREATE TABLE IF NOT EXISTS project_media (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  project_id INTEGER NOT NULL,
-  type TEXT NOT NULL CHECK (type IN ('image', 'video', 'youtube')),
-  url TEXT NOT NULL,
-  thumbnail_url TEXT,
-  title TEXT,
-  caption TEXT,
-  sort_order INTEGER NOT NULL DEFAULT 0,
-  created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-  FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
-);
-
 CREATE INDEX IF NOT EXISTS idx_projects_slug ON projects(slug);
 CREATE INDEX IF NOT EXISTS idx_projects_status ON projects(status);
 CREATE INDEX IF NOT EXISTS idx_projects_featured ON projects(featured);
@@ -59,7 +44,3 @@ CREATE INDEX IF NOT EXISTS idx_news_status ON news(status);
 CREATE INDEX IF NOT EXISTS idx_news_project_id ON news(project_id);
 CREATE INDEX IF NOT EXISTS idx_news_published_at ON news(published_at);
 CREATE INDEX IF NOT EXISTS idx_news_featured ON news(featured);
-
-CREATE INDEX IF NOT EXISTS idx_project_media_project_id ON project_media(project_id);
-CREATE INDEX IF NOT EXISTS idx_project_media_project_sort
-  ON project_media(project_id, sort_order, created_at, id);
